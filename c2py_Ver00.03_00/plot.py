@@ -49,7 +49,7 @@ def vec2graph_1(WriteName, X_interval, vec1):
     # グラフタイトル、X軸 Y軸のキャプション
     ax1.set_title("Title")
     ax1.set_ylabel("sin amplitude\n(0.3 Hz)")
-    ax1.set_xlabel("time [sec]\nFig 1. Up side graph is a 0.3 Hz sin wave which was sampled by 100 Hz.")
+    ax1.set_xlabel("time [sec]\nFig 1. Up side graph is a 0.3 Hz sin wave which was sampled by 10 Hz.")
 
     # グラフの保存
     plt.savefig(WriteName, bbox_inches="tight") # , dpi=100
@@ -70,7 +70,7 @@ def vec2graph_2(WriteName, X_interval, vec1, vec2):
     ax1.set_title("Title")
     ax1.set_ylabel("sin amplitude\n(0.3 Hz)")
     ax2.set_ylabel("cos amplitude\n(0.3 Hz)")
-    ax2.set_xlabel("time [sec]\nFig 1. Up side graph is a 0.3 Hz sin wave which was sampled by 100 Hz, \nand Down side graph is a 0.3 Hz cos wave which was sampled by 100 Hz.")
+    ax2.set_xlabel("time [sec]\nFig 1. Up side graph is a 0.3 Hz sin wave which was sampled by 10 Hz, \nand down side graph is a 0.3 Hz cos wave which was sampled by 10 Hz.")
 
     # グラフの保存
     plt.savefig(WriteName, bbox_inches="tight") # , dpi=100
@@ -94,7 +94,7 @@ def vec2graph_3(WriteName, X_interval, vec1, vec2, vec3):
     ax1.set_ylabel("sin amplitude\n(0.3 Hz)")
     ax2.set_ylabel("cos amplitude\n(0.3 Hz)")
     ax3.set_ylabel("2*sin amplitude\n(0.3 Hz)")
-    ax3.set_xlabel("time [sec]\nFig 1. Up side graph is a 0.3 Hz sin wave which was sampled by 100 Hz, \nmiddle side graph is a 0.3 Hz cos wave which was sampled by 100 Hz, \nand down side graph is a 0.3 Hz 2*sin wave which was sampled by 100 Hz.")
+    ax3.set_xlabel("time [sec]\nFig 1. Up side graph is a 0.3 Hz sin wave which was sampled by 10 Hz, \nmiddle side graph is a 0.3 Hz cos wave which was sampled by 10 Hz, \nand down side graph is a 0.3 Hz 2*sin wave which was sampled by 10 Hz.")
 
     # グラフの保存
     plt.savefig(WriteName, bbox_inches="tight") # , dpi=100

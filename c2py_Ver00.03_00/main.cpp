@@ -41,9 +41,9 @@ void vec2graph_3(const char* pWriteName, double interval, std::vector<double>& i
 
 int main(){
 
-	double freq2generate = 0.3; // 3 Hz sin wave
-	double freq2sample = 10;    // 100 Hz sampling
-	uint len=60*10 + 1;         // 1 sec
+	double freq2generate = 0.3; //  3 Hz sin wave
+	double freq2sample = 10;    // 10 Hz sampling
+	uint len=60*10 + 1;         // 60 sec
 	std::vector<double> sin_wave = sstd::sinWave(freq2generate, freq2sample, len);
 	std::vector<double> cos_wave = sstd::cosWave(freq2generate, freq2sample, len);
 	std::vector<double> sin_2(len); for(uint i=0; i<len; i++){ sin_2[i]=2*sin_wave[i]; }
