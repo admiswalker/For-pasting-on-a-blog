@@ -40,7 +40,7 @@ def vec2graph_1(WriteName, X_interval, vec1):
     plt.clf()#メモリのクリア
 
     # Figure インスタンスを生成
-    fig = plt.figure(figsize=(3*3, 1*2.5)) # 3*5, 1*5 # アスペクト比の設定
+    fig = plt.figure(figsize=(8, 1*2.5)) # 3*5, 1*5 # アスペクト比の設定
 
     # Axes インスタンスを生成
     ax1 = fig.add_subplot(111)
@@ -58,7 +58,7 @@ def vec2graph_2(WriteName, X_interval, vec1, vec2):
     plt.clf()#メモリのクリア
 
     # Figure インスタンスを生成
-    fig = plt.figure(figsize=(3*3, 2*2.5)) # 3*5, 1*5 # アスペクト比の設定
+    fig = plt.figure(figsize=(8, 2*2.5)) # 3*5, 1*5 # アスペクト比の設定
 
     # Axes インスタンスを生成
     ax1 = fig.add_subplot(211)
@@ -79,7 +79,7 @@ def vec2graph_3(WriteName, X_interval, vec1, vec2, vec3):
     plt.clf()#メモリのクリア
 
     # Figure インスタンスを生成
-    fig = plt.figure(figsize=(3*3, 3*2.5)) # 3*5, 1*5 # アスペクト比の設定
+    fig = plt.figure(figsize=(8, 3*2.5)) # 3*5, 1*5 # アスペクト比の設定
 
     # Axes インスタンスを生成
     ax1 = fig.add_subplot(311)
