@@ -1,0 +1,45 @@
+
+1. ダウンロード
+  wiki (https://ja.wikipedia.org/wiki/OpenSSL) 等で,OpenSSL の LTS 版を調べ，ダウンロードする．
+
+2. ローカルへのインストール
+  $ cd ./SendMail_VerXX.XX_XX/dependentLibs/openSSL/
+  $ tar xzvf openssl-1.0.2n.tar.gz
+  $ cd openssl-1.0.2n/
+
+  インストール先をローカルに指定する．
+  $ ./config --openssldir=../ shared
+
+  並列コンパイル
+  $ make -j
+
+  並列コンパイルすると，一部失敗するため，もう一度 make し，差分をコンパイルする．
+  $ make
+
+#  ローカルへインストール (コピー) # これは失敗するので，やめておく．
+#  $ make install
+
+3. makefile へパスを追加する
+	CFLAGS += -L./openssl/openssl -I./openssl/openssl/include -lssl -lcrypto # openssl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
