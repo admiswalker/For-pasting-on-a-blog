@@ -1,3 +1,5 @@
+#pragma once
+
 struct sMail{
 	std::string usr;     // usr name
 	std::string domain;  // domain
