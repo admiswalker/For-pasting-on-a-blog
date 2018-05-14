@@ -1,20 +1,19 @@
+#pragma once
 #include <string>
 #include <unistd.h>		//close()に必要
 #include <netdb.h>		//freeaddrinfo()
 #include <openssl/ssl.h>
 
-
 namespace sstd{ class sockSSL; }
-
 
 class sstd::sockSSL{
 private:
-	// Socketの通信部分
+	// for Socket
 	int sock;
-	std::string hostNameOrAddress; //ex:[www.google.co.jp]
-	std::string service;           //ex:[http]	//ポート番号を指定する代わり。(httpのポート番号80番をここに指定しても上手く動作する事を確認した。)
+	std::string hostNameOrAddress; //ex: "www.google.co.jp"
+	std::string service;           //ex: "http" or "80" (80 is a service number of HTTP.)
 	
-	// OpenSSLの部分
+	// for OpenSSL
 	SSL_CTX *ctx;
 	SSL     *ssl;
 	
@@ -23,7 +22,7 @@ public:
 		this->hostNameOrAddress = hostNameOrAddress_in;
 		this->service           = service_in;
 	}
-	~sockSSL(){ sstd_sockSSL_close(); }
+	~sockSSL(){ close(); }
 	
 	bool open();
 	
@@ -36,6 +35,6 @@ public:
 	//         SSLv2 (deprecated) does not support a shutdown alert protocol, so it can only be detected, whether the underlying connection was closed. It cannot be checked, why the closure happened.
 	//         Old documentation indicated a difference between 0 and -1, and that -1 was retryable. You should instead call SSL_get_error() to find out if it's retryable.
 
-	std::string receive(bool& result);
-	void sstd_sockSSL_close(); // 接続を切断する
+	std::string recv(bool& result);
+	void close(); // 接続を切断する
 };

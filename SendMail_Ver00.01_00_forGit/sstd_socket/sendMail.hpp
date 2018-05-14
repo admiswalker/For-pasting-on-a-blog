@@ -8,8 +8,8 @@ struct sMail{
 	std::string data;    // メールの本文(今回はHTMLmailなので、HTMLを記述)
 };
 
-void sendMail                  (struct sMail& mail);
-//void sendMail_withPrint        (struct sMail& mail);
-void sendMail_of_HTML          (struct sMail& mail);
-void sendMail_of_HTML_withPrint(struct sMail& mail);
+bool sendMail                  (struct sMail& mail);
+bool sendMail_withPrint        (struct sMail& mail);
+bool sendMail_of_HTML          (struct sMail& mail);
+bool sendMail_of_HTML_withPrint(struct sMail& mail);
 

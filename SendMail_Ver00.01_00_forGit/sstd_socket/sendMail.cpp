@@ -2,18 +2,18 @@
 #include "socket.hpp"
 #include "sendMail.hpp"
 
-void sendMail(struct sMail& mail){
+bool sendMail(struct sMail& mail){
 	sstd::sockSSL sock(sstd::ssprintf("smtp.%s", mail.domain.c_str()).c_str(), "465");
 	
 	bool ret;
-	sock.open();                                                sock.receive(ret);
-	sock.send("EHLO localhost\r\n"                           ); sock.receive(ret);
-	sock.send("AUTH LOGIN\r\n"                               ); sock.receive(ret);
-	sock.send(sstd::base64_encode(mail.usr)+"\r\n"           ); sock.receive(ret); // mail User ID
-	sock.send(sstd::base64_encode(mail.pass)+"\r\n"          ); sock.receive(ret); // mail pass
-	sock.send("MAIL FROM: <"+mail.usr+'@'+mail.domain+">\r\n"); sock.receive(ret);
-	sock.send("RCPT TO: <"+mail.to+">\r\n"                   ); sock.receive(ret);
-	sock.send("DATA\r\n"                                     ); sock.receive(ret);
+	if(!sock.open()){return false;}                                                   sock.recv(ret); if(!ret){return false;}
+	if( sock.send("EHLO localhost\r\n"                           )<=0){return false;} sock.recv(ret); if(!ret){return false;}
+	if( sock.send("AUTH LOGIN\r\n"                               )<=0){return false;} sock.recv(ret); if(!ret){return false;}
+	if( sock.send(sstd::base64_encode(mail.usr)+"\r\n"           )<=0){return false;} sock.recv(ret); if(!ret){return false;} // mail User ID
+	if( sock.send(sstd::base64_encode(mail.pass)+"\r\n"          )<=0){return false;} sock.recv(ret); if(!ret){return false;} // mail pass
+	if( sock.send("MAIL FROM: <"+mail.usr+'@'+mail.domain+">\r\n")<=0){return false;} sock.recv(ret); if(!ret){return false;}
+	if( sock.send("RCPT TO: <"+mail.to+">\r\n"                   )<=0){return false;} sock.recv(ret); if(!ret){return false;}
+	if( sock.send("DATA\r\n"                                     )<=0){return false;} sock.recv(ret); if(!ret){return false;}
 	
 	std::string buf;
 	buf  = "Subject: =?UTF-8?B?"+sstd::base64_encode(mail.subject)+"?=\r\n";
@@ -24,20 +24,50 @@ void sendMail(struct sMail& mail){
 	buf += "\r\n";
 	buf += mail.data+"\r\n";
 	buf += ".\r\n";
-	sock.send(buf                                            ); sock.receive(ret);
+	if( sock.send(buf                                            )<=0){return false;} sock.recv(ret); if(!ret){return false;}
+
+	return true;
 }
-void sendMail_of_HTML(struct sMail& mail){
+bool sendMail_withPrint(struct sMail& mail){
 	sstd::sockSSL sock(sstd::ssprintf("smtp.%s", mail.domain.c_str()).c_str(), "465");
 	
 	bool ret;
-	sock.open();                                                sock.receive(ret);
-	sock.send("EHLO localhost\r\n"                           ); sock.receive(ret);
-	sock.send("AUTH LOGIN\r\n"                               ); sock.receive(ret);
-	sock.send(sstd::base64_encode(mail.usr)+"\r\n"           ); sock.receive(ret); // mail User ID
-	sock.send(sstd::base64_encode(mail.pass)+"\r\n"          ); sock.receive(ret); // mail pass
-	sock.send("MAIL FROM: <"+mail.usr+'@'+mail.domain+">\r\n"); sock.receive(ret);
-	sock.send("RCPT TO: <"+mail.to+">\r\n"                   ); sock.receive(ret);
-	sock.send("DATA\r\n"                                     ); sock.receive(ret);
+	if(!sock.open()){return false;}                                                             sstd::print(sock.recv(ret)); if(!ret){return false;}
+	if( sock.send_withPrint("EHLO localhost\r\n"                           )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	if( sock.send_withPrint("AUTH LOGIN\r\n"                               )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	printf("Sending Data >> %s\n", mail.usr.c_str());
+	if( sock.send_withPrint(sstd::base64_encode(mail.usr)+"\r\n"           )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;} // mail User ID
+	printf("Sending Data >> %s\n", mail.pass.c_str());
+	if( sock.send_withPrint(sstd::base64_encode(mail.pass)+"\r\n"          )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;} // mail pass
+	if( sock.send_withPrint("MAIL FROM: <"+mail.usr+'@'+mail.domain+">\r\n")<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	if( sock.send_withPrint("RCPT TO: <"+mail.to+">\r\n"                   )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	if( sock.send_withPrint("DATA\r\n"                                     )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	
+	std::string buf;
+	buf  = "Subject: =?UTF-8?B?"+sstd::base64_encode(mail.subject)+"?=\r\n";
+	
+	buf += "Mime-Version: 1.0;\r\n";
+	buf += "Content-Type: text/plain; charset=\"UTF-8\";\r\n";
+	buf += "Content-Transfer-Encoding: 7bit;\r\n";
+	buf += "\r\n";
+	buf += mail.data+"\r\n";
+	buf += ".\r\n";
+	if( sock.send_withPrint(buf                                            )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+
+	return true;
+}
+bool sendMail_of_HTML(struct sMail& mail){
+	sstd::sockSSL sock(sstd::ssprintf("smtp.%s", mail.domain.c_str()).c_str(), "465");
+	
+	bool ret;
+	if(!sock.open()){return false;}                                                   sock.recv(ret); if(!ret){return false;}
+	if( sock.send("EHLO localhost\r\n"                           )<=0){return false;} sock.recv(ret); if(!ret){return false;}
+	if( sock.send("AUTH LOGIN\r\n"                               )<=0){return false;} sock.recv(ret); if(!ret){return false;}
+	if( sock.send(sstd::base64_encode(mail.usr)+"\r\n"           )<=0){return false;} sock.recv(ret); if(!ret){return false;} // mail User ID
+	if( sock.send(sstd::base64_encode(mail.pass)+"\r\n"          )<=0){return false;} sock.recv(ret); if(!ret){return false;} // mail pass
+	if( sock.send("MAIL FROM: <"+mail.usr+'@'+mail.domain+">\r\n")<=0){return false;} sock.recv(ret); if(!ret){return false;}
+	if( sock.send("RCPT TO: <"+mail.to+">\r\n"                   )<=0){return false;} sock.recv(ret); if(!ret){return false;}
+	if( sock.send("DATA\r\n"                                     )<=0){return false;} sock.recv(ret); if(!ret){return false;}
 	
 	std::string buf;
 	buf  = "Subject: =?UTF-8?B?"+sstd::base64_encode(mail.subject)+"?=\r\n";
@@ -48,24 +78,26 @@ void sendMail_of_HTML(struct sMail& mail){
 	buf += "\r\n";
 	buf += mail.data+"\r\n";
 	buf += ".\r\n";
-	sock.send(buf                                            ); sock.receive(ret);
+	if( sock.send(buf                                            )<=0){return false;} sock.recv(ret); if(!ret){return false;}
+	
+	return true;
 }
-void sendMail_of_HTML_withPrint(struct sMail& mail){
+bool sendMail_of_HTML_withPrint(struct sMail& mail){
 	sstd::sockSSL sock(sstd::ssprintf("smtp.%s", mail.domain.c_str()).c_str(), "465");
 	// poart number >> 465: SMTP over SSL
 	//                 587: TLS
 	
 	bool ret;
-	sock.open();                                                          sstd::print(sock.receive(ret));
-	sock.send_withPrint("EHLO localhost\r\n"                           ); sstd::print(sock.receive(ret));
-	sock.send_withPrint("AUTH LOGIN\r\n"                               ); sstd::print(sock.receive(ret));
-	printf("Send Data >> %s\n", mail.usr.c_str());
-	sock.send_withPrint(sstd::base64_encode(mail.usr)+"\r\n"           ); sstd::print(sock.receive(ret)); // mail User ID
-	printf("Send Data >> %s\n", mail.pass.c_str());
-	sock.send_withPrint(sstd::base64_encode(mail.pass)+"\r\n"          ); sstd::print(sock.receive(ret)); // mail pass
-	sock.send_withPrint("MAIL FROM: <"+mail.usr+'@'+mail.domain+">\r\n"); sstd::print(sock.receive(ret));
-	sock.send_withPrint("RCPT TO: <"+mail.to+">\r\n"                   ); sstd::print(sock.receive(ret));
-	sock.send_withPrint("DATA\r\n"                                     ); sstd::print(sock.receive(ret));
+	if(!sock.open()){return false;}                                                             sstd::print(sock.recv(ret)); if(!ret){return false;}
+	if( sock.send_withPrint("EHLO localhost\r\n"                           )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	if( sock.send_withPrint("AUTH LOGIN\r\n"                               )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	printf("Sending Data >> %s\n", mail.usr.c_str());
+	if( sock.send_withPrint(sstd::base64_encode(mail.usr)+"\r\n"           )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;} // mail User ID
+	printf("Sending Data >> %s\n", mail.pass.c_str());
+	if( sock.send_withPrint(sstd::base64_encode(mail.pass)+"\r\n"          )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;} // mail pass
+	if( sock.send_withPrint("MAIL FROM: <"+mail.usr+'@'+mail.domain+">\r\n")<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	if( sock.send_withPrint("RCPT TO: <"+mail.to+">\r\n"                   )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	if( sock.send_withPrint("DATA\r\n"                                     )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
 	
 	//std::string Subject_str = "TESTING_NOW_テスト投稿_＿（全角アンダーバーとか入れてみる。）＿（全角アンダーバーとか入れてみる。）文字数制限を確認する為に、長いタイトルを送信してみる。たしか、約80文字以上に長いタイトルの場合は、文字ごとにまとめて改行を施すなど、多少面倒な操作が必要とされるらしい。まだ長さが足りないので、もう少し文字数を増やして見る。果たしてちゃんと（？）失敗するだろうか？いやいやぁ、まだまだこの程度の長さでは全くもう失敗しないので、もう少しもうだいぶ長くしてみようと思うんだけど、これ本当に失敗するのかな？Gmailが優秀だから失敗しないのか、それとも、そもそも最近の規格では考える必要が無くなったのか、その辺りをはっきりさせたいのだが、そろそろキーボードを叩くのが面倒になってきた。(半角『』)結局失敗しなかった……。もう成功って事で良いよね？??？";	//Gmailの送信箱や受信箱では、おおよそ167文字以上からの表示がバグる。ただし、Blogger側での表示は正常。
 	//sock.SendMsg  = "Subject: \r\n";
@@ -82,7 +114,9 @@ void sendMail_of_HTML_withPrint(struct sMail& mail){
 	buf += "\r\n";
 	buf += mail.data+"\r\n";
 	buf += ".\r\n";
-	sock.send_withPrint(buf                                            ); sstd::print(sock.receive(ret));
+	if( sock.send_withPrint(buf                                            )<=0){return false;} sstd::print(sock.recv(ret)); if(!ret){return false;}
+	
+	return true;
 }
 
 /*
@@ -125,3 +159,6 @@ Content-Transfer-Encoding: 7bit;
 .
 250 2.0.0 OK 1522244454 XXXXXXXXXXXXXXXXXXX - gsmtp
 */
+
+
+

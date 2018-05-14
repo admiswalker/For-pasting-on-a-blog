@@ -27,7 +27,8 @@ int main(){
 		mail.data   += "abc あいう<br/>\r\n";
 		mail.data   += "<br/>\r\n";
 	
-		sendMail(mail);
+//		if(!sendMail          (mail)){ sstd::pdbg("ERROR: sendMail() was failed.\n"); }
+		if(!sendMail_withPrint(mail)){ sstd::pdbg("ERROR: sendMail_withPrint() was failed.\n"); }
 	}
 	//*
 	{	
@@ -45,8 +46,8 @@ int main(){
 		mail.data   += "abc あいう<br/>";
 		mail.data   += "<br/>";
 	
-		sendMail_of_HTML(mail);
-	//	sendMail_of_HTML_withPrint(mail);
+//		if(!sendMail_of_HTML          (mail)){ sstd::pdbg("ERROR: sendMail_of_HTML() was failed.\n"); }
+		if(!sendMail_of_HTML_withPrint(mail)){ sstd::pdbg("ERROR: sendMail_of_HTML_withPrint() was failed.\n"); }
 	}
 	//*/
 	
