@@ -15,7 +15,7 @@
 #       |
 #       + Makefile (Makefile that you need to '$ make'): This file
 #       |
-#       + make_temp/
+#       + tmpMake/
 #       |   |
 #       |   + *.d
 #       |   |
@@ -41,9 +41,12 @@
 # ヘッダファイルのディレクトリも追加する必要があります．また，拡張子を記述してはいけません)
 DIR  = ./*.
 DIR += ./src/*.
-DIR += ./src/MatrixStore_mat/*.
-DIR += ./src/MatrixStore_mat_rowMajor/*.
-DIR += ./src/MatrixStore_bmat/*.
+DIR += ./src/linearAlgebra/*.
+DIR += ./src/stdVector_expansion/*.
+DIR += ./src/matrixContainer_binary/*.
+DIR += ./src/matrixContainer_colMajor/*.
+DIR += ./src/matrixContainer_rowMajor/*.
+DIR += ./src/hashFnc_of_MD5_SHA1_SHA2/*.
 
 # Name of generate file: 生成ファイル名
 TARGET = libsstd.a
@@ -68,7 +71,7 @@ PYS      = $(wildcard $(PYDIR))
 HPPDIR   = $(patsubst %., %.hpp, $(DIR))
 HEADppS  = $(wildcard $(HPPDIR))
 
-TEMP_DIR = makeTemp
+TEMP_DIR = tmpMake
 OBJS     = $(addprefix $(TEMP_DIR)/, $(patsubst %.cpp, %.o, $(SRCS)))
 #OBJS     = $(addprefix $(TEMP_DIR)/, $(SRCS:%.cpp=%.o))#別表記
 

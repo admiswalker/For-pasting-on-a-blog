@@ -1,7 +1,6 @@
 ﻿#include "encode_decode.hpp"
 #include "ssprintf.hpp"
 
-#define sstd_measureTime
 #include "measureTime.hpp"
 
 #include <iostream>
@@ -11,7 +10,7 @@
 #include <locale>
 
 
-std::string sstd::base64_encode(const char* str, size_t strLen){
+std::string sstd::base64_encode(const uchar* str, size_t strLen){
 
 	uint retLen = sizeof(char)*(((strLen)*4+2)/3); // '=' のパディングを含めないサイズを，切り上げとなるように「+2」してから計算．(整数形は必ず切り捨てとなるため，「分母 - 1」を分子に足すと，切り上げとなる．)
 
@@ -49,11 +48,11 @@ std::string sstd::base64_encode(const char* str, size_t strLen){
 
 	return ret;
 }
-std::string sstd::base64_encode(const char* str){ return sstd::base64_encode(str, strlen(str)); }
-std::string sstd::base64_encode(std::string& str){ return sstd::base64_encode(str.c_str(), str.size()); }
+std::string sstd::base64_encode(const uchar* str){ return sstd::base64_encode(str, strlen((const char*)str)); }
+std::string sstd::base64_encode(const std::string& str){ return sstd::base64_encode((const uchar*)str.c_str(), str.size()); }
 
 
-std::string sstd::base64_decode(const char* str, size_t strLen){
+std::string sstd::base64_decode(const uchar* str, size_t strLen){
 	// str    : decodingするデータ (規格上，'=' padding により 4 の倍数に調整された文字列を渡す必要があるが，'=' padding がなくても，問題無くデコードできる．)
 	// strLen : 終了コードを含まない str の長さを渡す．
 	//
@@ -132,8 +131,8 @@ std::string sstd::base64_decode(const char* str, size_t strLen){
 
 	return ret;
 }
-std::string sstd::base64_decode(const char* str){ return sstd::base64_decode(str, strlen(str)); }
-std::string sstd::base64_decode(std::string& str){ return sstd::base64_decode(str.c_str(), str.size()); }
+std::string sstd::base64_decode(const uchar* str){ return sstd::base64_decode(str, strlen((const char*)str)); }
+std::string sstd::base64_decode(const std::string& str){ return sstd::base64_decode((const uchar*)str.c_str(), str.size()); }
 
 void sstd::print_base64_decode_table(){
 
@@ -250,12 +249,12 @@ void sstd::url_encode_compare_speed(){
 	printf("sstd::url_encode\n");
 	time_m t1; sstd::measureTime_start(t1);
 	for(uint i=0; i<10000; i++){ sstd::url_encode(str_url.c_str(), str_url.size()); }
-	sstd::measureTime_stop(t1);
+	sstd::measureTime_stop_print(t1);
 	
 	printf("sstd::url_encode_type2\n");
 	time_m t2; sstd::measureTime_start(t2);
 	for(uint i=0; i<10000; i++){ sstd::url_encode_type2(str_url.c_str(), str_url.size()); }
-	sstd::measureTime_stop(t2);
+	sstd::measureTime_stop_print(t2);
 	
 	/*
 	  sstd::url_encode
@@ -510,13 +509,13 @@ void sstd::unicodeEscape_compare_speed(){
 	printf("sstd::url_encode\n");
 	time_m t1; sstd::measureTime_start(t1);
 	for(uint i=0; i<25; i++){ sstd::url_encode(str_encoded.c_str(), str_encoded.size()); }
-	sstd::measureTime_stop(t1);
+	sstd::measureTime_stop_print(t1);
 	printf("\n");
 	
 	printf("sstd::url_encode_type2\n");
 	time_m t2; sstd::measureTime_start(t2);
 	for(uint i=0; i<25; i++){ sstd::url_encode_type2(str_encoded.c_str(), str_encoded.size()); }
-	sstd::measureTime_stop(t2);
+	sstd::measureTime_stop_print(t2);
 	
 	/*
 	  sstd::url_encode

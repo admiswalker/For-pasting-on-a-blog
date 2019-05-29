@@ -1,5 +1,4 @@
-﻿#define use_sstd_measureTime
-#ifdef _WIN32
+﻿#ifdef _WIN32
 	#include "./sstd/sstd.hpp"
 #else
 	#include <sstd/sstd.hpp>
@@ -88,7 +87,7 @@ void benchMark1(){
 	sstd::c2py<void> emptyFunc("./tmpDir", "pyFunctions", "emptyFunc", "void");
 	for(uint i=0; i<1000; i++){ emptyFunc(); }
 		
-	sstd::measureTime_stop(timem); sstd::pauseIfWin32();
+	sstd::measureTime_stop_print(timem); sstd::pauseIfWin32();
 //--------------------------------
 //	 Execution time:   199. 535 sec
 //--------------------------------
@@ -101,7 +100,7 @@ void benchMark2(){
 		emptyFunc();
 	}
 		
-	sstd::measureTime_stop(timem); sstd::pauseIfWin32();
+	sstd::measureTime_stop_print(timem); sstd::pauseIfWin32();
 //--------------------------------
 // Execution time:   200. 207 sec
 //--------------------------------
@@ -119,6 +118,24 @@ void applicationSample1(){
 }
 
 void applicationSample2(){
+	double freq_generate = 0.1; // 0.1 Hz sin wave
+	double freq_sample = 10;    // 10 Hz sampling
+	uint len=60*10 + 1;         // 60 sec
+	std::vector<double> sinY = sstd::sinWave(freq_generate, freq_sample, len);
+	std::vector<double> sinX(len); for(uint i=0; i<sinX.size(); i++){ sinX[i]=(double)i*(1/freq_sample); }
+	
+	std::vector<double> cosY = sstd::cosWave(freq_generate, freq_sample, len);
+	std::vector<double> cosX(len); for(uint i=0; i<cosX.size(); i++){ cosX[i]=(double)i*(1/freq_sample); }
+	
+	std::vector<std::string> vLabel={"sin", "cos", "-cos"};
+	std::vector<std::vector<double>> vvecX={sinX, cosX,    cosX};
+	std::vector<std::vector<double>> vvecY={sinY, cosY, -1*cosY};
+	
+	sstd::c2py<void> vvec2graph("./tmpDir", "pyFunctions", "vvec2graph", "void, const char*, const vec<str>*, const vvec<double>*, const vvec<double>*");
+	vvec2graph("./sin_cos.png", &vLabel, &vvecX, &vvecY);
+}
+
+void applicationSample3(){
 	sstd::c2py<void> imgPath2mat_rRGB("./tmpDir", "pyFunctions", "imgPath2mat_rRGB", "void, ret mat_r<uint8>*, ret mat_r<uint8>*, ret mat_r<uint8>*, const char*");
 	sstd::mat_r<uint8> imgR, imgG, imgB;
 	imgPath2mat_rRGB(&imgR, &imgG, &imgB, "./sample.png");
@@ -137,12 +154,15 @@ int main(){
 	printf("■ measureTime_start---------------\n\n"); time_m timem; sstd::measureTime_start(timem);
 	
 	sample1();
-//	benchMark1();
-//	benchMark2();
-//	applicationSample1();
-//	applicationSample2();
+//	benchMark1(); // Benchmarking is greatly affected by the number of import files on python side.
+//	benchMark2(); // Benchmarking is greatly affected by the number of import files on python side.
+	applicationSample1();
+	applicationSample2();
+	applicationSample3();
 	
-	printf("\n■ measureTime_stop----------------\n"); sstd::measureTime_stop(timem); sstd::pauseIfWin32();
+	printf("\n■ measureTime_stop----------------\n");
+	sstd::measureTime_stop_print(timem);
+	sstd::pauseIfWin32();
 	return 0;
 }
 

@@ -25,31 +25,6 @@
 // save/load as a bitmap, tiff, jpg, png
 // tiff, png 画像の読み込み (lzw 圧縮のみに対応予定？)
 
-// Eigen::MatrixXd <- eigen の場合
-// sstd::mat<double> <- MartixStore/Core
-// sstd::bmat
-// sstd::rmat
-// sstd::cmat
-// sstd::irmat // 区間演算
-// sstd::icmat // 区間演算
-// sstd::rmul // (MPFR を使うと，GPL ライセンスになるから・・・多少遅くとも，内製するか・・・？(IEEE754に準拠できるかが問題))
-// sstd::cmul // (MPFR を使うと，GPL ライセンスになるから・・・多少遅くとも，内製するか・・・？(IEEE754に準拠できるかが問題))
-// sstd::rmmat // real multi mat
-// sstd::cmmat // real multi mat (MPFR を使うと，GPL ライセンスになるから・・・書けるなら書く)
-// sstd::irmmat // 区間演算
-// sstd::icmmat // 区間演算
-
-// src_mat_b
-// src_mat_c
-// src_mat_ci
-// src_mat_cm
-// src_mat_cmi
-// src_mat_r
-// src_mat_ri
-// src_mat_rm
-// src_mat_rmi
-// src_mat_t
-
 // 数値計算系の関数 (スプライン補完等)
 
 #include "./src/measureTime.hpp"
@@ -61,6 +36,7 @@
 #include "./src/math.hpp"
 #include "./src/signal.hpp"
 #include "./src/file.hpp"
+#include "./src/file_c.hpp"
 #include "./src/mkdir.hpp"
 #include "./src/rm.hpp"
 #include "./src/str2num.hpp"
@@ -72,14 +48,21 @@
 #include "./src/tinyInterpreter.hpp"
 #include "./src/csv.hpp"
 #include "./src/encode_decode.hpp"
+#include "./src/hashFnc_of_MD5_SHA1_SHA2/sstd_md5_sha1_sha2_wrapper.hpp"
 #include "./src/pause.hpp"
+#include "./src/pid.hpp"
 
 namespace sstd{
 
 	// #include "./src/measureTime.hpp"
-	extern void measureTime_start(time_m& startTime);
-	extern void measureTime_stop (time_m& startTime);
-
+	extern void        measureTime_start     (      time_m& startTime);
+	extern double      measureTime_stop_s    (const time_m& startTime); // sec
+	extern double      measureTime_stop_ms   (const time_m& startTime); // milli sec
+	extern double      measureTime_stop_us   (const time_m& startTime); // micro sec
+	extern double      measureTime_stop_ns   (const time_m& startTime); // nano sec
+	extern std::string measureTime_stop_str  (const time_m& startTime);
+	extern void        measureTime_stop_print(const time_m& startTime);
+	
 	// #include "./src/sleep.hpp"
 	extern void sleep_hour(uint rhs);
 	extern void sleep_min (uint rhs);
@@ -106,15 +89,12 @@ namespace sstd{
 	extern void print(const struct tm& rhs);
 	
 	// #include "./src/pdbg.hpp"     // printf debugger
-	extern void pdbg();              // This function is enabled when DEBUG is #define d.
-	extern void pdbg_if();           // This function is enabled when DEBUG is #define d.
-	extern void pdbg_if_exit();      // This function is enabled when DEBUG is #define d.
-	extern void pdbg_if_stop_exit(); // This function is enabled when DEBUG is #define d.
-	extern void  dbg();              // This function is enabled when DEBUG is #define d.
-	extern void ndbg();              // This function is enabled when DEBUG is #define d.
-
-	extern void pdbg_always();
-	extern void pdbg_always_stop_exit();
+//	extern void pdbg();              // This function is enabled when DEBUG is #define d.
+//	extern void pdbg_if();           // This function is enabled when DEBUG is #define d.
+//	extern void pdbg_if_exit();      // This function is enabled when DEBUG is #define d.
+//	extern void pdbg_if_stop_exit(); // This function is enabled when DEBUG is #define d.
+//	extern void  dbg();              // This function is enabled when DEBUG is #define d.
+//	extern void ndbg();              // This function is enabled when DEBUG is #define d.
 
 	// #include "./src/print.hpp"
 	extern void print  (bool rhs);
@@ -208,9 +188,6 @@ namespace sstd{
 	extern float  stdev  (const std::vector<float>&  rhs); // 標本標準偏差 (sample standard deviation): u = SQRT( (1/(n-1))*Σ(x_i-μ)^2 )
 	extern float  stdev_p(const std::vector<float>&  rhs); // 標準偏差 (standard deviation): σ = SQRT( (1/n)*Σ(x_i-μ)^2 )
 	
-	extern std::vector<float> sort   (std::vector<float> rhs); // Ascending: 昇順: 0, 1, 2, ...
-	extern std::vector<float> sort_de(std::vector<float> rhs); // Descending: 降順: 9, 8, 7, ...
-
 	extern double sum    (const std::vector<double>& rhs);
 	extern double sum    (const std::vector<double>& rhs, uint a, uint b); // 配列の a 番目から b 番目までの合計. sum of the a th to b th of array.
 	extern double sum_abs(const std::vector<double>& rhs);
@@ -227,8 +204,126 @@ namespace sstd{
 	extern double stdev  (const std::vector<double>& rhs); // 標本標準偏差 (sample standard deviation): u = SQRT( (1/(n-1))*Σ(x_i-μ)^2 )
 	extern double stdev_p(const std::vector<double>& rhs); // 標準偏差 (standard deviation): σ = SQRT( (1/n)*Σ(x_i-μ)^2 )
 
-	extern std::vector<double> sort   (std::vector<double> rhs); // Ascending: 昇順: 0, 1, 2, ...
-	extern std::vector<double> sort_de(std::vector<double> rhs); // Descending: 降順: 9, 8, 7, ...
+	//------------------------------------------------------------------------
+	
+	extern   char max    (const std::vector< char >& rhs);
+	extern   int8 max    (const std::vector< int8 >& rhs);
+	extern  int16 max    (const std::vector< int16>& rhs);
+	extern  int32 max    (const std::vector< int32>& rhs);
+	extern  int64 max    (const std::vector< int64>& rhs);
+//	extern  uchar max    (const std::vector<uchar >& rhs); // same as a uint8
+	extern  uint8 max    (const std::vector<uint8 >& rhs);
+	extern uint16 max    (const std::vector<uint16>& rhs);
+	extern uint32 max    (const std::vector<uint32>& rhs);
+	extern uint64 max    (const std::vector<uint64>& rhs);
+	extern   char max_abs(const std::vector< char >& rhs);
+	extern   int8 max_abs(const std::vector< int8 >& rhs);
+	extern  int16 max_abs(const std::vector< int16>& rhs);
+	extern  int32 max_abs(const std::vector< int32>& rhs);
+	extern  int64 max_abs(const std::vector< int64>& rhs);
+	
+	extern   char min    (const std::vector< char >& rhs);
+	extern   int8 min    (const std::vector< int8 >& rhs);
+	extern  int16 min    (const std::vector< int16>& rhs);
+	extern  int32 min    (const std::vector< int32>& rhs);
+	extern  int64 min    (const std::vector< int64>& rhs);
+//	extern  uchar min    (const std::vector<uchar >& rhs); // same as a uint8
+	extern  uint8 min    (const std::vector<uint8 >& rhs);
+	extern uint16 min    (const std::vector<uint16>& rhs);
+	extern uint32 min    (const std::vector<uint32>& rhs);
+	extern uint64 min    (const std::vector<uint64>& rhs);
+	extern   char min_abs(const std::vector< char >& rhs);
+	extern   int8 min_abs(const std::vector< int8 >& rhs);
+	extern  int16 min_abs(const std::vector< int16>& rhs);
+	extern  int32 min_abs(const std::vector< int32>& rhs);
+	extern  int64 min_abs(const std::vector< int64>& rhs);
+	
+	extern   char max    (const sstd::mat_c< char >& rhs);
+	extern   int8 max    (const sstd::mat_c< int8 >& rhs);
+	extern  int16 max    (const sstd::mat_c< int16>& rhs);
+	extern  int32 max    (const sstd::mat_c< int32>& rhs);
+	extern  int64 max    (const sstd::mat_c< int64>& rhs);
+//	extern  uchar max    (const sstd::mat_c<uchar >& rhs); // same as a uint8
+	extern  uint8 max    (const sstd::mat_c<uint8 >& rhs);
+	extern uint16 max    (const sstd::mat_c<uint16>& rhs);
+	extern uint32 max    (const sstd::mat_c<uint32>& rhs);
+	extern uint64 max    (const sstd::mat_c<uint64>& rhs);
+	extern  float max    (const sstd::mat_c< float>& rhs);
+	extern double max    (const sstd::mat_c<double>& rhs);
+	extern   char max_abs(const sstd::mat_c< char >& rhs);
+	extern   int8 max_abs(const sstd::mat_c< int8 >& rhs);
+	extern  int16 max_abs(const sstd::mat_c< int16>& rhs);
+	extern  int32 max_abs(const sstd::mat_c< int32>& rhs);
+	extern  int64 max_abs(const sstd::mat_c< int64>& rhs);
+	extern  float max_abs(const sstd::mat_c< float>& rhs);
+	extern double max_abs(const sstd::mat_c<double>& rhs);
+	
+	extern   char min    (const sstd::mat_c< char >& rhs);
+	extern   int8 min    (const sstd::mat_c< int8 >& rhs);
+	extern  int16 min    (const sstd::mat_c< int16>& rhs);
+	extern  int32 min    (const sstd::mat_c< int32>& rhs);
+	extern  int64 min    (const sstd::mat_c< int64>& rhs);
+//	extern  uchar min    (const sstd::mat_c<uchar >& rhs); // same as a uint8
+	extern  uint8 min    (const sstd::mat_c<uint8 >& rhs);
+	extern uint16 min    (const sstd::mat_c<uint16>& rhs);
+	extern uint32 min    (const sstd::mat_c<uint32>& rhs);
+	extern uint64 min    (const sstd::mat_c<uint64>& rhs);
+	extern  float min    (const sstd::mat_c< float>& rhs);
+	extern double min    (const sstd::mat_c<double>& rhs);
+	extern   char min_abs(const sstd::mat_c< char >& rhs);
+	extern   int8 min_abs(const sstd::mat_c< int8 >& rhs);
+	extern  int16 min_abs(const sstd::mat_c< int16>& rhs);
+	extern  int32 min_abs(const sstd::mat_c< int32>& rhs);
+	extern  int64 min_abs(const sstd::mat_c< int64>& rhs);
+	extern  float min_abs(const sstd::mat_c< float>& rhs);
+	extern double min_abs(const sstd::mat_c<double>& rhs);
+	
+	extern   char max    (const sstd::mat_r< char >& rhs);
+	extern   int8 max    (const sstd::mat_r< int8 >& rhs);
+	extern  int16 max    (const sstd::mat_r< int16>& rhs);
+	extern  int32 max    (const sstd::mat_r< int32>& rhs);
+	extern  int64 max    (const sstd::mat_r< int64>& rhs);
+//	extern  uchar max    (const sstd::mat_r<uchar >& rhs); // same as a uint8
+	extern  uint8 max    (const sstd::mat_r<uint8 >& rhs);
+	extern uint16 max    (const sstd::mat_r<uint16>& rhs);
+	extern uint32 max    (const sstd::mat_r<uint32>& rhs);
+	extern uint64 max    (const sstd::mat_r<uint64>& rhs);
+	extern  float max    (const sstd::mat_r< float>& rhs);
+	extern double max    (const sstd::mat_r<double>& rhs);
+	extern   char max_abs(const sstd::mat_r< char >& rhs);
+	extern   int8 max_abs(const sstd::mat_r< int8 >& rhs);
+	extern  int16 max_abs(const sstd::mat_r< int16>& rhs);
+	extern  int32 max_abs(const sstd::mat_r< int32>& rhs);
+	extern  int64 max_abs(const sstd::mat_r< int64>& rhs);
+	extern  float max_abs(const sstd::mat_r< float>& rhs);
+	extern double max_abs(const sstd::mat_r<double>& rhs);
+	
+	extern   char min    (const sstd::mat_r< char >& rhs);
+	extern   int8 min    (const sstd::mat_r< int8 >& rhs);
+	extern  int16 min    (const sstd::mat_r< int16>& rhs);
+	extern  int32 min    (const sstd::mat_r< int32>& rhs);
+	extern  int64 min    (const sstd::mat_r< int64>& rhs);
+//	extern  uchar min    (const sstd::mat_r<uchar >& rhs); // same as a uint8
+	extern  uint8 min    (const sstd::mat_r<uint8 >& rhs);
+	extern uint16 min    (const sstd::mat_r<uint16>& rhs);
+	extern uint32 min    (const sstd::mat_r<uint32>& rhs);
+	extern uint64 min    (const sstd::mat_r<uint64>& rhs);
+	extern  float min    (const sstd::mat_r< float>& rhs);
+	extern double min    (const sstd::mat_r<double>& rhs);
+	extern   char min_abs(const sstd::mat_r< char >& rhs);
+	extern   int8 min_abs(const sstd::mat_r< int8 >& rhs);
+	extern  int16 min_abs(const sstd::mat_r< int16>& rhs);
+	extern  int32 min_abs(const sstd::mat_r< int32>& rhs);
+	extern  int64 min_abs(const sstd::mat_r< int64>& rhs);
+	extern  float min_abs(const sstd::mat_r< float>& rhs);
+	extern double min_abs(const sstd::mat_r<double>& rhs);
+	
+	//------------------------------------------------------------------------
+	
+//	std::vector<T> sort   (std::vector<T> rhs); // Ascending: 昇順: 0, 1, 2, ...
+//	std::vector<T> sort_de(std::vector<T> rhs); // Descending: 降順: 9, 8, 7, ...
+	
+	//------------------------------------------------------------------------
 	
 	extern std::vector<uint64> prime(uint64 rhs);                                  // get a list of prime number
 	extern std::vector<struct fact> factor(uint64 rhs);                            // get a list of prime factorization
@@ -236,12 +331,13 @@ namespace sstd{
 	extern void for_printn(const std::vector<struct fact>& factList);
 	extern std::vector<uint64> divisor(const std::vector<struct sstd::fact>& rhs); // get a list of all divisors
 	extern std::vector<uint64> divisor(uint64 rhs);                                // get a list of all divisors
-
-	extern uint   pow(uint   base, uint   exp);
-	extern uint8  pow(uint8  base, uint8  exp);
-	extern uint16 pow(uint16 base, uint16 exp);
-	extern uint32 pow(uint32 base, uint32 exp);
-	extern uint64 pow(uint64 base, uint64 exp);
+	
+	extern uint8  pow(const uint8 & base, const uint8 & exp);
+	extern uint16 pow(const uint16& base, const uint16& exp);
+	extern uint32 pow(const uint32& base, const uint32& exp);
+	extern uint64 pow(const uint64& base, const uint64& exp);
+	extern  float pow(const  float& base, const  float& exp);
+	extern double pow(const double& base, const double& exp);
 	
 	// #include "signal.hpp"
 	extern std::vector<double> sinWave(double freq2generate, double freq2sample, uint len);
@@ -251,15 +347,25 @@ namespace sstd{
 //	class file;
 //    fopen(), fclose(), fread(), fwrite(), fseek(), ftell()
 //	There is no needing to call "fclose", because destructor call "fclose" at end of the scope.
+	// #include "./src/file_c.hpp"
+//	class file_c;
 	
 	// #include "./src/mkdir.hpp"
 	extern void mkdir(const char*        pPath);
 	extern void mkdir(const std::string&  path);
 
 	// #include "./src/rm.hpp"
-	extern bool rm(const char*        pPath);
-	extern bool rm(const std::string&  path);
-
+	extern bool unlink(const char*        pPath); // delete file
+	extern bool unlink(const std::string&  path); // delete file
+	extern bool rmdir (const char*        pPath); // delete empty directory
+	extern bool rmdir (const std::string&  path); // delete empty directory
+	extern bool rm    (const char*        pPath); // delete all under the pPath
+	extern bool rm    (const std::string&  path); // delete all under the path
+	extern bool getAllPath(std::vector<struct sstd::pathAndType>& ret, const char* pPath); // get all path in the directory
+	extern bool getAllPath(std::vector<std::string>& ret, const char* pPath);              // get all path in the directory
+	extern bool getAllFile(std::vector<std::string>& ret, const char* pPath);              // get all file path in the directory
+	extern bool getAllDir (std::vector<std::string>& ret, const char* pPath);              // get all directory path in the directory
+	
 	// #include "./src/str2num.hpp" // using std::stod and std::stoi, but probably it might be slow in parse.
 	extern double str2double(const std::string& rhs);
 	extern int str2int(const std::string& rhs); // 小数点以下，切り捨て
@@ -275,7 +381,7 @@ namespace sstd{
 	extern bool isAlphabet_onlyUpper(char rhs);
 	extern bool isAlphabet_onlyLower(char rhs);
 
-	// #include "./src/pathNameExtractor.hpp" // <- 不足する関数を追加する必要がある．
+	// #include "./src/path.hpp" // <- 不足する関数を追加する必要がある．
 	// GetDirectoryName
 	extern std::string  getPath                     (const char* pPath);
 	extern        char* getFileName                 (const char* pPath);
@@ -289,44 +395,70 @@ namespace sstd{
 	// getParent
 	extern std::vector<std::string> parsePath         (const char* pPath);
 	extern std::vector<std::string> parsePath_withBase(const char* pPath);
-//	isDir
-//  fileExist
+
+	extern bool isFile(const char*        pPath);
+	extern bool isFile(const std::string&  path);
+	extern bool isDir (const char*        pPath);
+	extern bool isDir (const std::string&  path);
+	
+	extern bool fileExist(const char*        pPath);
+	extern bool fileExist(const std::string&  path);
+	extern bool  dirExist(const char*        pPath);
+	extern bool  dirExist(const std::string&  path);
+	extern bool pathExist(const char*        pPath);
+	extern bool pathExist(const std::string&  path);
+//   dirExist
+//	bool pathExist(const char* path){ return fileExist(path) || dirExist(path); }
 //	命名規則に関しては，"http://docs.python.jp/2/library/os.path.html" 等を参考にしてもよさそう．
 	
 
 	// #include "./src/getFilePathInDir.hpp"
 	extern std::vector<std::string> getFilePathInDir(const char* DirAndFileName_withWildCard);
-
+	
 	// #include "./src/strEdit.hpp"
-	extern std::vector<std::string> split(const char* str, const char X);
+	extern std::vector<uint8> readAll_bin         (const char*        pReadFile); // read all of the file as a binary
+	extern std::vector<uint8> readAll_bin         (const std::string&  readFile); // read all of the file as a binary
+	extern bool               writeAll_bin        (const char*        pWritePath, std::vector<uint8>& rhs);
+	extern bool               writeAll_bin        (const std::string&  writePath, std::vector<uint8>& rhs);
+	extern std::string readAll                    (const char*        pReadFile); // readAll_str()
+	extern std::string readAll                    (const std::string&  readFile); // readAll_str()
+	extern std::string readAll_withoutBOM         (const char*        pReadFile);
+	extern std::string readAll_withoutBOM         (const std::string&  readFile);
+	extern std::vector<std::string> getCommandList(const char* pReadFile);
+	
+	extern std::vector<std::string> splitByLine   (const std::string& str);
+	extern std::vector<std::string> split         (const char*        str, const char X);
+	extern std::vector<std::string> split         (const std::string& str, const char X);
 	
 	extern std::string              removeHeadSpace(const uchar* str);
 	extern void                     removeTailSpace(std::string& str);
 	extern std::string              removeSpace_of_HeadAndTail(const uchar* str);
+	extern void                     removeSpace_of_HeadAndTail(std::string& str);
 	extern std::vector<std::string> removeSpace_of_HeadAndTail(const std::vector<std::string>& vec);
-
+	
+	extern bool strcmp(const char*        str1, const char*        str2);
+	extern bool strcmp(const char*        str1, const std::string& str2);
+	extern bool strcmp(const std::string& str1, const char*        str2);
+	extern bool strcmp(const std::string& str1, const std::string& str2);
+	
 	// #include "./src/tinyInterpreter.hpp"
 		// How to use GetCommandList(); function.
 		//
 		// TinyInterPrinter define middle of "/*~*/" and before "//" as a commnet.
 		// And a ";" mean the end of command. Return value is the list of command.
-	extern std::string readAll                    (const char* pReadFile);
-	extern std::string readAll_withoutBOM         (const char* pReadFile);
-	extern std::vector<std::string> getCommandList(const char* pReadFile);
 	extern std::vector<std::string> splitByComma  (const std::string& str);	// str をカンマで分割する
-	extern std::vector<std::string> splitByLine   (const std::string& str);
 
 	// #include "./src/csv.hpp"
 	extern std::vector<std::vector<std::string>> parseCSV(const char* pReadFile);
 
 	// #include "./src/encode_decode.hpp"
-	extern std::string base64_encode(const char* str, size_t strLen);
-	extern std::string base64_encode(const char* str);
-	extern std::string base64_encode(std::string& str);
+	extern std::string base64_encode(const uchar* str, size_t strLen);
+	extern std::string base64_encode(const uchar* str);
+	extern std::string base64_encode(const std::string& str);
 
-	extern std::string base64_decode(const char* str, size_t strLen); // when it was error, return 0 size std::string.
-	extern std::string base64_decode(const char* str);                // when it was error, return 0 size std::string.
-	extern std::string base64_decode(std::string& str);               // when it was error, return 0 size std::string.
+	extern std::string base64_decode(const uchar* str, size_t strLen); // when it was error, return 0 size std::string.
+	extern std::string base64_decode(const uchar* str);                // when it was error, return 0 size std::string.
+	extern std::string base64_decode(const std::string& str);          // when it was error, return 0 size std::string.
 
 	extern const  char bin2str_table[256][3];
 	extern const uchar str2bin_table[256];
@@ -353,15 +485,32 @@ namespace sstd{
 	extern std::u16string unicodeEscape_decode(const char* str);
 	extern std::u16string unicodeEscape_decode(const std::string& str);
 
+	// #include "./src/MD5_SHA1_SHA2/sstd_MD5_sha1_sha2_wrapper.hpp"
+	extern std::vector<uint8> md5   (const uchar* in, size_t in_len);
+	extern std::vector<uint8> sha1  (const uchar* in, size_t in_len);
+	extern std::vector<uint8> sha224(const uchar* in, size_t in_len);
+	extern std::vector<uint8> sha256(const uchar* in, size_t in_len);
+	extern std::vector<uint8> sha384(const uchar* in, size_t in_len);
+	extern std::vector<uint8> sha512(const uchar* in, size_t in_len);
+	
+	extern std::vector<uint8> md5   (const std::vector<uint8>& in);
+	extern std::vector<uint8> sha1  (const std::vector<uint8>& in);
+	extern std::vector<uint8> sha224(const std::vector<uint8>& in);
+	extern std::vector<uint8> sha256(const std::vector<uint8>& in);
+	extern std::vector<uint8> sha384(const std::vector<uint8>& in);
+	extern std::vector<uint8> sha512(const std::vector<uint8>& in);
+	
 	// #include "./src/pause.h"
 	extern void pause();
 	extern void pauseIfWin32();
 }
 
 
-#include "./src/MatrixStore_mat/mat.hpp"            // Because of this header use "pdbg.hpp", we need to define after namespace sstd{}.
-#include "./src/MatrixStore_mat_rowMajor/mat_r.hpp" // Because of this header use "pdbg.hpp", we need to define after namespace sstd{}.
-#include "./src/MatrixStore_bmat/bmat.hpp"
+#include "./src/linearAlgebra/matCal.hpp"
+#include "./src/matrixContainer_binary/bmat.hpp"
+#include "./src/stdVector_expansion/stdVector_expansion.hpp"
+#include "./src/matrixContainer_colMajor/mat_c.hpp" // Because of this header use "pdbg.hpp", we need to define after namespace sstd{}.
+#include "./src/matrixContainer_rowMajor/mat_r.hpp" // Because of this header use "pdbg.hpp", we need to define after namespace sstd{}.
 
 #include "./src/pdbg.hpp"                           // In order to avoid conflict of "pdbg.hpp", we need to define after namespace sstd{}.
 #include "./src/print.hpp"                          // In order to avoid conflict of "print.hpp", we need to define after namespace sstd{}.

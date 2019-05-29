@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "../typeDef.h"
-#include "../MatrixStore_mat/mat.hpp"
+#include "../matrixContainer_colMajor/mat_c.hpp"
 
 // 8x8 binary matrix is column-major order, 
 // and outside of the 8x8 martix is row-major order.
@@ -24,7 +24,7 @@ namespace sstd{
 	void               eye(class sstd::bmat& bMat);
 	void              ones(class sstd::bmat& bMat);
 	void             zeros(class sstd::bmat& bMat);
-	class sstd::bmat   eye(const uint& row, const uint& col);
+	class sstd::bmat   eye(const uint& row, const uint& col); // このあたり，戻り値で関数はオーバーロードできないので，他の型についても実装すると，衝突する危険がある．(書き直し．
 	class sstd::bmat  ones(const uint& row, const uint& col);
 	class sstd::bmat zeros(const uint& row, const uint& col);
 	class sstd::bmat   eye(const uint& size);
@@ -46,7 +46,7 @@ namespace sstd{
 
 	class sstd::bmat     and_(class sstd::bmat& lhs, class sstd::bmat& rhs);	// lhs & rhs (AND)	// _ を付加しないと，何かと名前が衝突した．
 	class sstd::bmat      or_(class sstd::bmat& lhs, class sstd::bmat& rhs);	// lhs | rhs (OR)	// _ を付加しないと，何かと名前が衝突した．
-	class sstd::bmat     not_(class sstd::bmat& rhs);								// ~rhs (NOT)		// _ を付加しないと，何かと名前が衝突した．
+	class sstd::bmat     not_(class sstd::bmat& rhs);							// ~rhs (NOT)		// _ を付加しないと，何かと名前が衝突した．
 	class sstd::bmat     xor_(class sstd::bmat& lhs, class sstd::bmat& rhs);	// lhs + rhs (XOR)	// _ を付加しないと，何かと名前が衝突した．
 	void           and_myself(class sstd::bmat& lhs, class sstd::bmat& rhs);	// lhs & rhs (AND)
 	void            or_myself(class sstd::bmat& lhs, class sstd::bmat& rhs);	// lhs | rhs (OR)
@@ -92,7 +92,7 @@ private:
 	// 初期化する順番で宣言する必要がある
 	uint rowNum;	// 行数
 	uint colNum;	// 列数
-	sstd::mat<uint64> binMat8x8;	// 8x8 の BinMartix 行列の集合
+	sstd::mat_c<uint64> binMat8x8;	// 8x8 の BinMartix 行列の集合
 	
 public:
 	bmat(): rowNum(0), colNum(0) {}
@@ -103,13 +103,13 @@ public:
 	// std::swap(lhs, rhs): "move to uninitalized object" -> "copy to lhs or rhs" -> "copy to lhs or rhs" will be called.
 	~bmat(){}
 	
-	// inline sstd::mat<uint64> bMat8x8(){ return binMat8x8; } // Do not do this to avoid object copy
-	inline const sstd::mat<uint64>& bMat8x8_R() const { return binMat8x8; }
+	// inline sstd::mat_c<uint64> bMat8x8(){ return binMat8x8; } // Do not do this to avoid object copy
+	inline const sstd::mat_c<uint64>& bMat8x8_R() const { return binMat8x8; }
 	inline const uint rows() const { return rowNum; }
 	inline const uint cols() const { return colNum; }
 
 	// RW: read and write
-	inline sstd::mat<uint64>& bMat8x8_RW(){ return binMat8x8; }
+	inline sstd::mat_c<uint64>& bMat8x8_RW(){ return binMat8x8; }
 	inline uint& rows_RW(){ return rowNum; }
 	inline uint& cols_RW(){ return colNum; }
 
