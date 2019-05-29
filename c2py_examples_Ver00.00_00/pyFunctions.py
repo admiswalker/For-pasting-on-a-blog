@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt # "QXcbConnection: Could not connect to display"
 import matplotlib.ticker as tick
 def vec2graph(writeName, vecX, vecY):
     plt.clf()
-    fig = plt.figure(figsize=(9, 3)) # アスペクト比の設定
+    fig = plt.figure(figsize=(8.5, 3)) # アスペクト比の設定
     ax1 = fig.add_subplot(111)
     ax1.plot(vecX, vecY, color='k', linewidth=0.5)
     
@@ -63,14 +63,14 @@ def vec2graph(writeName, vecX, vecY):
 
 def vvec2graph(writeName, vLabel, vvecX, vvecY):
     plt.clf()
-    fig = plt.figure(figsize=(9, 3)) # アスペクト比の設定
+    fig = plt.figure(figsize=(8.5, 3)) # アスペクト比の設定
     ax1 = fig.add_subplot(111)
     #cmap = plt.get_cmap("tab10")
     vColor=['black', 'blue', 'red']
     vLineStyle = ['solid', 'solid', 'solid'] # solid, dashed, dashdot, dotted
     for i in range(len(vvecX)):
-        ax1.plot(vvecX[i], vvecY[i], linewidth=0.5, color=vColor[i], linestyle=vLineStyle[i], label=vLabel[i])
         #ax1.plot(vvecX[i], vvecY[i], linewidth=0.5, color=cmap(i), linestyle=vLineStyle[i], label=vLabel[i])
+        ax1.plot(vvecX[i], vvecY[i], linewidth=0.5, color=vColor[i], linestyle=vLineStyle[i], label=vLabel[i])
     ax1.legend(loc='upper right')
     
     ax1.grid(which='minor', linewidth=0.5, linestyle=':',  color='gainsboro')
